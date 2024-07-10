@@ -11,30 +11,30 @@ import {SERVER_URL} from '../../Constants';
 // issue a POST with the URL /enrollments/sections/{secNo}?studentId=3
 // studentId=3 will be removed in assignment 7.
 
-const CourseEnroll = () => {
+const CourseEnroll = ({ studentId }) => {
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [enrolling, setEnrolling] = useState(false);
 
-    useEffect(() => {
-        const fetchSections = async () => {
-            try {
-                const response = await fetch(`${SERVER_URL}/sections/open`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch sections');
-                }
-                const data = await response.json();
-                setSections(data);
-                setTimeout(() => {
-                    setLoading(false);
-                }, 3000);
-            } catch (err) {
-                setError(err.message);
-                setLoading(false);
+    // Define fetchSections function
+    const fetchSections = async () => {
+        try {
+            const response = await fetch(`${SERVER_URL}/courses`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch courses');
             }
-        };
+            const data = await response.json();
+            setSections(data);
+            setLoading(false);
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
+    };
 
+    // Fetch sections on component mount
+    useEffect(() => {
         fetchSections();
     }, []);
 
@@ -48,8 +48,29 @@ const CourseEnroll = () => {
                 throw new Error('Failed to enroll');
             }
             alert('Enrolled successfully!');
+            fetchSections(); // Refresh sections after enrollment
         } catch (err) {
+            console.error('Error enrolling:', err);
             alert(`Error enrolling: ${err.message}`);
+        } finally {
+            setEnrolling(false);
+        }
+    };
+
+    const handleDrop = async (secNo) => {
+        setEnrolling(true);
+        try {
+            const response = await fetch(`${SERVER_URL}/enrollments/sections/${secNo}?studentId=3`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to drop');
+            }
+            alert('Dropped successfully!');
+            fetchSections(); // Refresh sections after dropping
+        } catch (err) {
+            console.error('Error dropping:', err);
+            alert(`Error dropping: ${err.message}`);
         } finally {
             setEnrolling(false);
         }
@@ -62,6 +83,7 @@ const CourseEnroll = () => {
     if (error) {
         return <Typography color="error">Error: {error}</Typography>;
     }
+
     return (
         <TableContainer component={Paper}>
             <Table>
@@ -84,6 +106,14 @@ const CourseEnroll = () => {
                             <TableCell>
                                 <Button
                                     variant="contained"
+                                    color="secondary"
+                                    onClick={() => handleDrop(section.secNo)}
+                                    disabled={enrolling}
+                                >
+                                    Drop
+                                </Button>
+                                <Button
+                                    variant="contained"
                                     color="primary"
                                     onClick={() => handleEnroll(section.secNo)}
                                     disabled={enrolling}
@@ -100,4 +130,3 @@ const CourseEnroll = () => {
 };
 
 export default CourseEnroll;
-
