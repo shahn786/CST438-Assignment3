@@ -4,7 +4,7 @@ import { SERVER_URL } from '../../Constants';
 const AssignmentGrade = ({ assignmentId }) => {
     const [grades, setGrades] = useState([]);
     const [message, setMessage] = useState('');
-    const instructorEmail = 'dwisneski@csumb.edu'; // This can be replaced with the logged-in user's email
+    const instructorEmail = 'dwisneski@csumb.edu';
 
     useEffect(() => {
         fetchGrades();
