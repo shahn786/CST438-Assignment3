@@ -21,7 +21,7 @@ const AssignmentGrade = (props) => {
 
     const fetchGrades = async (id) => {
         try {
-            const response = await fetch(`${SERVER_URL}/assignments/${id}/grades`);
+            const response = await fetch(`${SERVER_URL}/assignment/${id}/grades`);
             if (response.ok) {
                 const data = await response.json();
                 setGrades(data);
