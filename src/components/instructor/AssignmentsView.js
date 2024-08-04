@@ -19,8 +19,15 @@ const AssignmentsView = (props) => {
 
     const fetchAssignments = async () => {
        
-      try {
-        const response = await fetch(`${SERVER_URL}/sections/${secNo}/assignments`);
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/sections/${secNo}/assignments`,
+                {
+                    headers: {
+                        'Authorization': jwt,
+                    },
+                });
         if (response.ok) {
           const data = await response.json();
           setAssignments(data);

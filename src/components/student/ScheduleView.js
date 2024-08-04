@@ -14,8 +14,16 @@ const ScheduleView = (props) => {
 
    
     const fetchEnrollments = async () => {
-             try {
-            const response = await fetch(`${SERVER_URL}/enrollments?studentId=3&year=${term.year}&semester=${term.semester}`);
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/enrollments?year=${term.year}&semester=${term.semester}`,
+                {
+                    headers: {
+                        'Authorization': jwt,
+                    },
+                });
+
             if (response.ok) {
                 const data = await response.json();
                 setEnrollments(data);
@@ -30,10 +38,16 @@ const ScheduleView = (props) => {
 
     const dropCourse = async (enrollmentId) => {
         try {
+            const jwt = sessionStorage.getItem('jwt');
+
             const response = await fetch(`${SERVER_URL}/enrollments/${enrollmentId}`,
                 {
                     method: 'DELETE',
+                    headers: {
+                        'Authorization': jwt,
+                    },
                 });
+
             if (response.ok) {
                 setMessage("course dropped");
                 fetchEnrollments();
