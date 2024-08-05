@@ -44,65 +44,85 @@ const AssignmentsView = (props) => {
       fetchAssignments()
     }, []);
 
-    const add = (assignment) => {
-        assignment.courseId = courseId;
-        assignment.secId = secId;
-        assignment.secNo = secNo;
-        fetch (`${SERVER_URL}/assignments`, 
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-          body: JSON.stringify(assignment),
-        })
-        .then(response => response.json() )
-        .then(data => {
-            setMessage("Assignment created id="+data.id);
-            fetchAssignments();
-        })
-        .catch(err => setMessage(err));
-    }
+    const add = async (assignment) => {
+        try {
+            const jwt = sessionStorage.getItem('jwt');
 
-    const save = (assignment) => {
-        fetch (`${SERVER_URL}/assignments`, 
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-          body: JSON.stringify(assignment),
-        })
-        .then(response => response.json() )
-        .then(data => {
-            setMessage("Assignment saved");
-            fetchAssignments();
-        })
-        .catch(err => setMessage(err));
-    }
+            assignment.courseId = courseId;
+            assignment.secId = secId;
+            assignment.secNo = secNo;
 
+            const response = await fetch(`${SERVER_URL}/assignments`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(assignment),
+            });
 
-    const doDelete = (e) => {
-        const row_idx = e.target.parentNode.parentNode.rowIndex - 1;
-        const id = assignments[row_idx].id;
-        fetch (`${SERVER_URL}/assignments/${id}`, 
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-        })
-        .then(response => {
             if (response.ok) {
-                setMessage("Assignment deleted");
+                const data = await response.json();
+                setMessage("Assignment created id=" + data.id);
                 fetchAssignments();
             } else {
-                setMessage("Delete failed");
+                const json = await response.json();
+                setMessage("response error: " + json.message);
             }
-            
-        })
-        .catch(err => setMessage(err));
+        } catch (err) {
+            setMessage("network error: " + err.message);
+        }
     }
+
+    const save = async (assignment) => {
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/assignments`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(assignment),
+            });
+
+            if (response.ok) {
+                setMessage("Assignment saved");
+                fetchAssignments();
+            } else {
+                const json = await response.json();
+                setMessage("response error: " + json.message);
+            }
+        } catch (err) {
+            setMessage("network error: " + err.message);
+        }
+    }
+
+
+const doDelete = async (id) => {
+    try {
+        const jwt = sessionStorage.getItem('jwt');
+
+        const response = await fetch(`${SERVER_URL}/assignments/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': jwt,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            setMessage("Assignment deleted");
+            fetchAssignments();
+        } else {
+            const json = await response.json();
+            setMessage("Delete failed: " + json.message);
+        }
+    } catch (err) {
+        setMessage("Network error: " + err.message);
+    }
+}
 
     const onDelete = (e) => {
         confirmAlert({

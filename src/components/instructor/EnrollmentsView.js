@@ -43,14 +43,17 @@ const EnrollmentsView = (props) => {
 
     const saveGrades = async () => {
         try {
+            const jwt = sessionStorage.getItem('jwt');
+
             const response = await fetch (
                 `${SERVER_URL}/enrollments`, 
                 {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': jwt,
                 }, 
-                body: JSON.stringify(enrollments),
+                    body: JSON.stringify(enrollments),
                 });
             if (response.ok) {
                 setMessage("Grades saved");
