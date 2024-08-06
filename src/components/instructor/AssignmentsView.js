@@ -19,8 +19,15 @@ const AssignmentsView = (props) => {
 
     const fetchAssignments = async () => {
        
-      try {
-        const response = await fetch(`${SERVER_URL}/sections/${secNo}/assignments`);
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/sections/${secNo}/assignments`,
+                {
+                    headers: {
+                        'Authorization': jwt,
+                    },
+                });
         if (response.ok) {
           const data = await response.json();
           setAssignments(data);
@@ -37,80 +44,102 @@ const AssignmentsView = (props) => {
       fetchAssignments()
     }, []);
 
-    const add = (assignment) => {
-        assignment.courseId = courseId;
-        assignment.secId = secId;
-        assignment.secNo = secNo;
-        fetch (`${SERVER_URL}/assignments`, 
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-          body: JSON.stringify(assignment),
-        })
-        .then(response => response.json() )
-        .then(data => {
-            setMessage("Assignment created id="+data.id);
-            fetchAssignments();
-        })
-        .catch(err => setMessage(err));
+    const add = async (assignment) => {
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            assignment.courseId = courseId;
+            assignment.secId = secId;
+            assignment.secNo = secNo;
+
+            const response = await fetch(`${SERVER_URL}/assignments`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(assignment),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setMessage("Assignment created id=" + data.id);
+                fetchAssignments();
+            } else {
+                const json = await response.json();
+                setMessage("response error: " + json.message);
+            }
+        } catch (err) {
+            setMessage("network error: " + err.message);
+        }
     }
 
-    const save = (assignment) => {
-        fetch (`${SERVER_URL}/assignments`, 
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-          body: JSON.stringify(assignment),
-        })
-        .then(response => response.json() )
-        .then(data => {
-            setMessage("Assignment saved");
-            fetchAssignments();
-        })
-        .catch(err => setMessage(err));
+    const save = async (assignment) => {
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/assignments`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(assignment),
+            });
+
+            if (response.ok) {
+                setMessage("Assignment saved");
+                fetchAssignments();
+            } else {
+                const json = await response.json();
+                setMessage("response error: " + json.message);
+            }
+        } catch (err) {
+            setMessage("network error: " + err.message);
+        }
     }
 
 
-    const doDelete = (e) => {
-        const row_idx = e.target.parentNode.parentNode.rowIndex - 1;
-        const id = assignments[row_idx].id;
-        fetch (`${SERVER_URL}/assignments/${id}`, 
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-        })
-        .then(response => {
+    const doDelete = async (e) => {
+        try {
+            const row_idx = e.target.parentNode.parentNode.rowIndex - 1;
+            const id = assignments[row_idx].id;
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/assignments/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                },
+            });
+
             if (response.ok) {
                 setMessage("Assignment deleted");
                 fetchAssignments();
             } else {
-                setMessage("Delete failed");
+                const rc = await response.json();
+                setMessage("Delete failed: " + rc.message);
             }
-            
-        })
-        .catch(err => setMessage(err));
-    }
+        } catch (err) {
+            setMessage("network error: " + err.message);
+        }
+    };
 
     const onDelete = (e) => {
         confirmAlert({
             title: 'Confirm to delete',
             message: 'Do you really want to delete?',
             buttons: [
-              {
-                label: 'Yes',
-                onClick: () => doDelete(e)
-              },
-              {
-                label: 'No',
-              }
+                {
+                    label: 'Yes',
+                    onClick: () => doDelete(e)
+                },
+                {
+                    label: 'No',
+                }
             ]
-          });
+        });
     }
 
     const headers = ['id', 'Title', 'Due Date', '', '', ''];

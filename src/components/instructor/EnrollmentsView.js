@@ -16,7 +16,15 @@ const EnrollmentsView = (props) => {
         
         if (!secNo) return;
         try {
-            const response = await fetch(`${SERVER_URL}/sections/${secNo}/enrollments`);
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/sections/${secNo}/enrollments`,
+                {
+                    headers: {
+                        'Authorization': jwt,
+                    },
+                });
+
             if (response.ok) {
                 const data = await response.json();
                 setEnrollments(data);
@@ -35,14 +43,17 @@ const EnrollmentsView = (props) => {
 
     const saveGrades = async () => {
         try {
+            const jwt = sessionStorage.getItem('jwt');
+
             const response = await fetch (
                 `${SERVER_URL}/enrollments`, 
                 {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': jwt,
                 }, 
-                body: JSON.stringify(enrollments),
+                    body: JSON.stringify(enrollments),
                 });
             if (response.ok) {
                 setMessage("Grades saved");

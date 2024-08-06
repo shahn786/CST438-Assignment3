@@ -14,8 +14,14 @@ function UsersView(props) {
     const [message, setMessage] = useState('');
 
     const  fetchUsers = async () => {
-      try {
-        const response = await fetch(`${SERVER_URL}/users`);
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/users`,
+                {
+                    headers: {
+                        'Authorization': jwt,
+                }});
         if (response.ok) {
           const users = await response.json();
           setUsers(users);
@@ -33,15 +39,18 @@ function UsersView(props) {
     }, []);
 
     const saveUser = async (user) => {
-      try {
-        const response = await fetch(`${SERVER_URL}/users`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            }, 
-            body: JSON.stringify(user),
-          });
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/users`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': jwt,
+                        'Content-Type': 'application/json',
+                    }, 
+                    body: JSON.stringify(user),
+                });
         if (response.ok) {
           setMessage("user saved")
           fetchUsers();
@@ -55,15 +64,18 @@ function UsersView(props) {
     }
 
     const addUser = async (user) => {
-      try {
-        const response = await  fetch(`${SERVER_URL}/users`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            }, 
-            body: JSON.stringify(user),
-          });
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await  fetch(`${SERVER_URL}/users`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': jwt,
+                        'Content-Type': 'application/json',
+                    }, 
+                    body: JSON.stringify(user),
+                });
         if (response.ok) {
           const newuser = await response.json();
           setMessage("user added id="+newuser.id);
@@ -78,14 +90,17 @@ function UsersView(props) {
     }
 
     const deleteUser = async (id) => {
-      try {
-        const response = await fetch(`${SERVER_URL}/users/${id}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            }, 
-          });
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch(`${SERVER_URL}/users/${id}`,
+              {
+                method: 'DELETE',
+                  headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                }, 
+              });
         if (response.ok) {
           setMessage("User deleted");
           fetchUsers();

@@ -19,8 +19,14 @@ function SectionsView(props) {
         if (search.courseId==='' || search.year==='' || search.semester==='' ) {
             setMessage("Enter search parameters");
         } else {
-          try {
-            const response = await fetch(`${SERVER_URL}/courses/${search.courseId}/sections?year=${search.year}&semester=${search.semester}`);
+            try {
+                const jwt = sessionStorage.getItem('jwt');
+
+                const response = await fetch(`${SERVER_URL}/courses/${search.courseId}/sections?year=${search.year}&semester=${search.semester}`,
+                    {
+                        headers: {
+                          'Authorization': jwt,
+                    }});
             if (response.ok) {
               const data = await response.json();
               setSections(data);
@@ -35,15 +41,18 @@ function SectionsView(props) {
     }
 
     const saveSection = async (section) => {
-      try {
-        const response = await fetch (`${SERVER_URL}/sections`, 
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            }, 
-            body: JSON.stringify(section),
-          });
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch (`${SERVER_URL}/sections`, 
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': jwt,
+                        'Content-Type': 'application/json',
+                    }, 
+                    body: JSON.stringify(section),
+                });
         if (response.ok) {
           setMessage("section saved");
           fetchSections();
@@ -57,15 +66,18 @@ function SectionsView(props) {
     }
 
     const addSection = async (section) => {
-      try {
-        const response = await fetch (`${SERVER_URL}/sections`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            }, 
-            body: JSON.stringify(section),
-          });
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch (`${SERVER_URL}/sections`,
+              {
+                method: 'POST',
+                  headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                }, 
+                body: JSON.stringify(section),
+              });
         if (response.ok) {
           const rc = await response.json();
           setMessage("section added secno="+rc.secNo);
@@ -80,14 +92,17 @@ function SectionsView(props) {
     }
 
     const deleteSection = async (secNo) => {
-      try {
-        const response = await fetch (`${SERVER_URL}/sections/${secNo}`, 
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          }, 
-        });
+        try {
+            const jwt = sessionStorage.getItem('jwt');
+
+            const response = await fetch (`${SERVER_URL}/sections/${secNo}`, 
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': jwt,
+                        'Content-Type': 'application/json',
+                  }, 
+            });
         if (response.ok) {
           setMessage("Section deleted");
           fetchSections();
