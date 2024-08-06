@@ -100,44 +100,46 @@ const AssignmentsView = (props) => {
     }
 
 
-const doDelete = async (id) => {
-    try {
-        const jwt = sessionStorage.getItem('jwt');
+    const doDelete = async (e) => {
+        try {
+            const row_idx = e.target.parentNode.parentNode.rowIndex - 1;
+            const id = assignments[row_idx].id;
+            const jwt = sessionStorage.getItem('jwt');
 
-        const response = await fetch(`${SERVER_URL}/assignments/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': jwt,
-                'Content-Type': 'application/json',
-            },
-        });
+            const response = await fetch(`${SERVER_URL}/assignments/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': jwt,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        if (response.ok) {
-            setMessage("Assignment deleted");
-            fetchAssignments();
-        } else {
-            const json = await response.json();
-            setMessage("Delete failed: " + json.message);
+            if (response.ok) {
+                setMessage("Assignment deleted");
+                fetchAssignments();
+            } else {
+                const rc = await response.json();
+                setMessage("Delete failed: " + rc.message);
+            }
+        } catch (err) {
+            setMessage("network error: " + err.message);
         }
-    } catch (err) {
-        setMessage("Network error: " + err.message);
-    }
-}
+    };
 
     const onDelete = (e) => {
         confirmAlert({
             title: 'Confirm to delete',
             message: 'Do you really want to delete?',
             buttons: [
-              {
-                label: 'Yes',
-                onClick: () => doDelete(e)
-              },
-              {
-                label: 'No',
-              }
+                {
+                    label: 'Yes',
+                    onClick: () => doDelete(e)
+                },
+                {
+                    label: 'No',
+                }
             ]
-          });
+        });
     }
 
     const headers = ['id', 'Title', 'Due Date', '', '', ''];
